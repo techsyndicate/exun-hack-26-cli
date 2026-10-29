@@ -176,6 +176,7 @@ program
       "list",
       "close",
       "assign",
+      "status",
     ])
   )
   .action(async (option) => {
@@ -218,7 +219,9 @@ program
         cases.forEach((c, index) => {
           printText(
             color(
-              `${index + 1}. ${c.title} - ${c.description}`,
+              `${index + 1}. ${c.title} - ${c.description} (${
+                c.isOpen ? "Open" : "Closed"
+              })`,
               c.isOpen ? "green" : "yellow"
             )
           );
@@ -274,6 +277,39 @@ program
       foundCase.assignedTo.push(foundAgent.id);
       await foundCase.save();
       printText(color(`Agent assigned successfully.`, "green"));
+    } else if (option == "status") {
+      const caseName = readlineSync.question(
+        color("Enter the case name: ", "cyan")
+      );
+      const foundCase = await Case.findOne({ title: caseName });
+      if (!foundCase) {
+        printText(color(`No case found with that name.`, "red"));
+        await mongoose.connection.close();
+        return;
+      }
+      console.log("");
+      printText(color(`Title: ${foundCase.title}`, "cyan"));
+      printText(color(`Description: ${foundCase.description}`, "cyan"));
+      printText(
+        color(`This case has been assigned to the following agents:`, "cyan")
+      );
+      if (foundCase.assignedTo.length === 0) {
+        printText(color("No agents assigned to this case.", "yellow"));
+      }
+      for (const agentId of foundCase.assignedTo) {
+        const agent = await Agent.findById(agentId);
+        if (agent) {
+          printText(color(`- ${agent.name}`, "white"));
+        }
+      }
+      if (foundCase.isOpen) {
+        printText(color("This case is currently open.", "green"));
+      } else {
+        printText(color("This case is currently closed.", "yellow"));
+        printText(color("\nReport:", "cyan"));
+        printText(color(foundCase.report, "white"));
+        console.log("");
+      }
     } else {
       printText(color(`Invalid option "${option}".`, "red"));
     }
@@ -287,7 +323,7 @@ program
     new Argument("<option>", "Command option").choices([
       "add",
       "list",
-      "delete"
+      "delete",
     ])
   )
   .action(async (option) => {
@@ -298,8 +334,12 @@ program
       return;
     }
     if (option == "add") {
-      const title = readlineSync.question(color("Announcement title: ", "cyan"));
-      const content = readlineSync.question(color("Enter the announcement: ", "cyan"));
+      const title = readlineSync.question(
+        color("Announcement title: ", "cyan")
+      );
+      const content = readlineSync.question(
+        color("Enter the announcement: ", "cyan")
+      );
       if (!title || !content) {
         printText(color("Title and content are required.", "red"));
         await mongoose.connection.close();
@@ -329,7 +369,9 @@ program
       announcements.forEach((a, index) => {
         printText(color(`${index + 1}. ${a.title}`, "green"));
       });
-      const title = readlineSync.question(color("Enter the title of the announcement to delete: ", "cyan"));
+      const title = readlineSync.question(
+        color("Enter the title of the announcement to delete: ", "cyan")
+      );
       const foundAnnouncement = await Announcement.findOne({ title });
       if (!foundAnnouncement) {
         printText(color(`No announcement found with that title.`, "red"));
@@ -340,6 +382,6 @@ program
       printText(color(`Announcement deleted successfully.`, "green"));
     }
     await mongoose.connection.close();
-  })
+  });
 
 program.parse();
