@@ -1,0 +1,30 @@
+{
+  "name": "exun-hack-26-cli",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "bin/client.js",
+  "bin": {
+    "etinuxe": "./bin/client.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/techsyndicate/exun-hack-26-cli.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/techsyndicate/exun-hack-26-cli/issues"
+  },
+  "homepage": "https://github.com/techsyndicate/exun-hack-26-cli#readme",
+  "description": "",
+  "dependencies": {
+    "ansi-color": "^0.2.2",
+    "commander": "^15.0.0",
+    "dotenv": "^18.0.9",
+    "readline-sync": "^1.4.10"
+  }
+}
