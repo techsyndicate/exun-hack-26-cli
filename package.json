@@ -25,6 +25,8 @@
     "ansi-color": "^0.2.2",
     "commander": "^15.0.0",
     "dotenv": "^18.0.9",
+    "mongoose": "^9.11.4",
+    "open": "^11.0.4",
     "readline-sync": "^1.4.10"
   }
 }
