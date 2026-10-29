@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import { Case } from "../schemas/caseSchema.js";
 import { Agent } from "../schemas/agentSchema.js";
 import { Session } from "../schemas/sessionSchema.js";
+import { Announcement } from "../schemas/announcementSchema.js";
 import dotenv from "dotenv";
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -278,5 +279,67 @@ program
     }
     await mongoose.connection.close();
   });
+
+program
+  .command("announcements")
+  .description("View and add announcements for the agency.")
+  .addArgument(
+    new Argument("<option>", "Command option").choices([
+      "add",
+      "list",
+      "delete"
+    ])
+  )
+  .action(async (option) => {
+    const user = await getUser();
+    if (!user) {
+      printText(color("You must be logged in to use this command.", "red"));
+      await mongoose.connection.close();
+      return;
+    }
+    if (option == "add") {
+      const title = readlineSync.question(color("Announcement title: ", "cyan"));
+      const content = readlineSync.question(color("Enter the announcement: ", "cyan"));
+      if (!title || !content) {
+        printText(color("Title and content are required.", "red"));
+        await mongoose.connection.close();
+        return;
+      }
+      const newAnnouncement = new Announcement({ title, content });
+      await newAnnouncement.save();
+      printText(color(`Announcement added successfully.`, "green"));
+    } else if (option == "list") {
+      const announcements = await Announcement.find();
+      if (announcements.length === 0) {
+        printText(color("No announcements found.", "yellow"));
+      } else {
+        printText(color("List of announcements:", "cyan"));
+        announcements.forEach((a, index) => {
+          printText(color(`${index + 1}. ${a.title} - ${a.content}`, "green"));
+        });
+      }
+    } else if (option == "delete") {
+      printText(color("Current Announcements: ", "cyan"));
+      const announcements = await Announcement.find();
+      if (announcements.length === 0) {
+        printText(color("No announcements found.", "yellow"));
+        await mongoose.connection.close();
+        return;
+      }
+      announcements.forEach((a, index) => {
+        printText(color(`${index + 1}. ${a.title}`, "green"));
+      });
+      const title = readlineSync.question(color("Enter the title of the announcement to delete: ", "cyan"));
+      const foundAnnouncement = await Announcement.findOne({ title });
+      if (!foundAnnouncement) {
+        printText(color(`No announcement found with that title.`, "red"));
+        await mongoose.connection.close();
+        return;
+      }
+      await Announcement.deleteOne({ _id: foundAnnouncement._id });
+      printText(color(`Announcement deleted successfully.`, "green"));
+    }
+    await mongoose.connection.close();
+  })
 
 program.parse();
